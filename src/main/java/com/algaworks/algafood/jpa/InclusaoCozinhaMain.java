@@ -28,6 +28,6 @@ public class InclusaoCozinhaMain {
 		
 		System.out.println(cadastrada.getNome());
 		
-		cad.remover(cadastrada);
+		cad.remover(cadastrada.getId());
 	}
 }

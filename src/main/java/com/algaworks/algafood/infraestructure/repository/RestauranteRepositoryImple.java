@@ -35,8 +35,8 @@ public class RestauranteRepositoryImple implements RestauranteRepository {
 
 	@Override
 	@Transactional
-	public void remover(Restaurante restaurante) {
-		manager.remove(buscar(restaurante.getId()));
+	public void remover(Long id) {
+		manager.remove(buscar(id));
 	}
 
 }

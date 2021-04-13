@@ -1,28 +1,32 @@
 package com.algaworks.algafood.domain.service;
 
+import com.algaworks.algafood.domain.exception.EntidadeEmUsoException;
+import com.algaworks.algafood.domain.exception.EntidadeNaoEncontradaException;
+import com.algaworks.algafood.domain.model.Cozinha;
+import com.algaworks.algafood.domain.repository.CozinhaRepository;
+import com.algaworks.algafood.jpa.CadastroCozinha;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
-import com.algaworks.algafood.domain.exception.EntidadeNaoEncontradaException;
-import com.algaworks.algafood.domain.exception.EntidadeEmUsoException;
-import com.algaworks.algafood.domain.model.Cozinha;
-import com.algaworks.algafood.domain.repository.CozinhaRepository;
-
 @Service
 public class CadastroCozinhaService {
 
+	private final CozinhaRepository cozinhaRepository;
+
 	@Autowired
-	private CozinhaRepository cozinhaRepository;
+	public CadastroCozinhaService(CozinhaRepository cozinhaRepository) {
+		this.cozinhaRepository = cozinhaRepository;
+	}
 
 	public Cozinha salvar(Cozinha cozinha) {
-		return cozinhaRepository.salvar(cozinha);
+		return cozinhaRepository.save(cozinha);
 	}
 
 	public void excluir(Long id) {
 		try {
-			cozinhaRepository.remover(id);
+			cozinhaRepository.deleteById(id);
 		} catch (EmptyResultDataAccessException e) {
 			throw new EntidadeNaoEncontradaException(
 					String.format("Não consigo achar a cozinha com o codigo: %d", id));

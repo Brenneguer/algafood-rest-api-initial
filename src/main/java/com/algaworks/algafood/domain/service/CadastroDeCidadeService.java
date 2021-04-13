@@ -2,27 +2,29 @@ package com.algaworks.algafood.domain.service;
 
 import com.algaworks.algafood.domain.exception.EntidadeNaoEncontradaException;
 import com.algaworks.algafood.domain.model.Cidade;
-import com.algaworks.algafood.infraestructure.repository.CidadeRepositoryImple;
+import com.algaworks.algafood.domain.repository.CidadeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class CadastroDeCidadeService {
-    private final CidadeRepositoryImple cidadeRepository;
+    private final CidadeRepository cidadeRepository;
 
     @Autowired
-    CadastroDeCidadeService(CidadeRepositoryImple cidadeRepository) {
+    CadastroDeCidadeService(CidadeRepository cidadeRepository) {
         this.cidadeRepository = cidadeRepository;
     }
 
     public Cidade salvar(Cidade cidade) {
-        return cidadeRepository.salvar(cidade);
+        return cidadeRepository.save(cidade);
     }
 
     public void excluir(Long id) {
         try {
-            Cidade cidade = cidadeRepository.buscar(id);
-            cidadeRepository.remover(cidade);
+            Optional<Cidade> cidade = cidadeRepository.findById(id);
+            cidade.ifPresent(cidadeRepository::delete);
         } catch(EntidadeNaoEncontradaException e) {
             throw new EntidadeNaoEncontradaException(String.format("Não foi possível encontrar a cidade de id: %d", id));
         } catch(RuntimeException e) {

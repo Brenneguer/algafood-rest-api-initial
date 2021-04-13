@@ -1,24 +1,24 @@
 package com.algaworks.algafood.api.controller;
 
 import com.algaworks.algafood.domain.model.Cidade;
-import com.algaworks.algafood.domain.repository.AlgaFoodRepository;
+import com.algaworks.algafood.domain.repository.CidadeRepository;
 import com.algaworks.algafood.domain.service.CadastroDeCidadeService;
-import org.apache.catalina.connector.Response;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/cidades")
 public class CidadeController {
-    private AlgaFoodRepository<Cidade> cidadeRepository;
-    private CadastroDeCidadeService cidadeService;
+    private final CidadeRepository cidadeRepository;
+    private final CadastroDeCidadeService cidadeService;
 
     @Autowired
-    public CidadeController(AlgaFoodRepository<Cidade> cidadeRepository,
+    public CidadeController(CidadeRepository cidadeRepository,
                             CadastroDeCidadeService cidadeService) {
         this.cidadeRepository = cidadeRepository;
         this.cidadeService = cidadeService;
@@ -26,14 +26,19 @@ public class CidadeController {
 
     @GetMapping
     public List<Cidade> listar() {
-        return cidadeRepository.listar();
+        return cidadeRepository.findAll();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Cidade> buscar(@PathVariable Long id) {
-        Cidade c = cidadeRepository.buscar(id);
-        return c != null ? ResponseEntity.ok().body(c) :
-                ResponseEntity.notFound().build();
+        Optional<Cidade> c = cidadeRepository.findById(id);
+
+        return c.map(cidade -> ResponseEntity.ok()
+                .body(cidade))
+                .orElseGet(() -> ResponseEntity
+                        .notFound()
+                        .build());
+
     }
 
     @PostMapping
@@ -45,13 +50,14 @@ public class CidadeController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Cidade> atualizar(@PathVariable Long id, @RequestBody Cidade cidade) {
-        Cidade c = cidadeRepository.buscar(id);
+        Optional<Cidade> c = cidadeRepository.findById(id);
 
-        if(c == null) return ResponseEntity.notFound().build();
-
-        BeanUtils.copyProperties(cidade, c, "id");
-        c = cidadeService.salvar(c);
-        return ResponseEntity.ok(c);
+        if (c.isPresent()) {
+        BeanUtils.copyProperties(cidade, c.get(), "id");
+        Cidade cidadeAtualizada = cidadeService.salvar(c.get());
+        return ResponseEntity.ok(cidadeAtualizada);
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")

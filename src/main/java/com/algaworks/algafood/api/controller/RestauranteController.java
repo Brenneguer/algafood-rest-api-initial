@@ -14,24 +14,30 @@ import org.springframework.web.bind.annotation.*;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/restaurantes")
 public class RestauranteController {
+
+    private final RestauranteRepository restauranteRepository;
+    private final CadastroRestauranteService cadastroRestauranteService;
+
     @Autowired
-    private RestauranteRepository restauranteRepository;
-    @Autowired
-    private CadastroRestauranteService cadastroRestauranteService;
+    public RestauranteController(RestauranteRepository restauranteRepository, CadastroRestauranteService cadastroRestauranteService) {
+        this.restauranteRepository = restauranteRepository;
+        this.cadastroRestauranteService = cadastroRestauranteService;
+    }
 
     @GetMapping
     public List<Restaurante> listar() {
-        return restauranteRepository.listar();
+        return restauranteRepository.findAll();
     }
 
     @GetMapping("/{restauranteId}")
     public ResponseEntity<Restaurante> buscarPorId(@PathVariable long restauranteId) {
-        Restaurante restaurante = restauranteRepository.buscar(restauranteId);
-        return restaurante != null ? ResponseEntity.ok(restaurante) : ResponseEntity.notFound().build();
+        Optional<Restaurante> restaurante = restauranteRepository.findById(restauranteId);
+        return restaurante.map(r -> ResponseEntity.ok().body(r)).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
@@ -44,12 +50,12 @@ public class RestauranteController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Restaurante> atualizar(@PathVariable Long id, @RequestBody Restaurante restaurante) {
-        Restaurante r = restauranteRepository.buscar(id);
-        if (r == null) return ResponseEntity.notFound().build();
+        Optional<Restaurante> r = restauranteRepository.findById(id);
+        if (r.isEmpty()) return ResponseEntity.notFound().build();
 
-        BeanUtils.copyProperties(restaurante, r, "id");
-        r = cadastroRestauranteService.salvar(r);
-        return ResponseEntity.status(HttpStatus.CREATED).body(r);
+        BeanUtils.copyProperties(restaurante, r.get(), "id");
+        Restaurante restauranteAtualizado = cadastroRestauranteService.salvar(r.get());
+        return ResponseEntity.status(HttpStatus.CREATED).body(restauranteAtualizado);
     }
 
     @DeleteMapping("/{restauranteId}")
@@ -60,11 +66,11 @@ public class RestauranteController {
 
     @PatchMapping("/{restauranteId}")
     public ResponseEntity<?> atualizarParcial(@PathVariable Long restauranteId, @RequestBody Map<String, Object> campos) {
-        Restaurante r = restauranteRepository.buscar(restauranteId);
-        if (r == null) return ResponseEntity.notFound().build();
+        Optional<Restaurante> r = restauranteRepository.findById(restauranteId);
+        if (r.isEmpty()) return ResponseEntity.notFound().build();
 
-        merge(campos, r);
-        return atualizar(restauranteId, r);
+        merge(campos, r.get());
+        return atualizar(restauranteId, r.get());
     }
 
     private void merge(Map<String, Object> campos, Restaurante restauranteNovo) {

@@ -1,17 +1,15 @@
 package com.algaworks.algafood.jpa;
 
-import java.util.List;
+import com.algaworks.algafood.domain.model.Cozinha;
+import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
+import java.util.List;
 
-import org.springframework.stereotype.Component;
-
-import com.algaworks.algafood.domain.model.Cozinha;
-
-@Component
+@Repository
 public class CadastroCozinha {
 
 	@PersistenceContext

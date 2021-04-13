@@ -19,13 +19,7 @@ public class CadastroRestauranteService{
     public Restaurante salvar(Restaurante restaurante) {
         return restauranteRepository.adicionar(restaurante);
     }
-
-    public Restaurante atualizar(Restaurante restaurante) {
-        Restaurante r = restauranteRepository.buscar(restaurante.getId());
-        if (r == null) return null;
-        return salvar(restaurante);
-    }
-
+    
     public void excluir(Long id) {
         try {
             restauranteRepository.remover(id);
